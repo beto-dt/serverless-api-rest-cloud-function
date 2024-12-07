@@ -1,8 +1,8 @@
-import {EntryInterface} from "../interfaces/entryInterface";
+import {taskInterface} from "../interfaces/task.interface";
 
-type Request = {
-    body: EntryInterface,
-    params: { entryId: string}
+type Request= {
+    body: taskInterface,
+    params: { taskId: string}
 }
 
-export { Request }
+export { Request };
