@@ -22,4 +22,25 @@ const createUser = async (req: RequestUser, res: Response) => {
     }
 }
 
-export { createUser };
+const getUserByEmail = async (req: RequestUser, res: Response) => {
+    const { email } = req.params;
+
+
+    try{
+        const user = await admin.auth().getUserByEmail(email);
+
+        res.status(200).send({
+            status: 'success',
+            message: 'user getting successfully',
+            data: {
+                'uid' : user.uid,
+                'email': user.email,
+                'emailVerified' : user.emailVerified
+            }
+        })
+    } catch(error: any) {
+        res.status(500).json(error.message);
+    }
+}
+
+export { createUser, getUserByEmail };
