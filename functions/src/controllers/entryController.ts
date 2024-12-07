@@ -1,15 +1,7 @@
 import { Response } from 'express';
-import { db } from './config/firebase';
-
-type EntryType = {
-    title: string,
-    text: string
-}
-
-type Request = {
-    body: EntryType,
-    params: { entryId: string}
-}
+import { db } from '../config/firebase';
+import { Request } from '../enum/request';
+import {EntryInterface} from "../interfaces/entryInterface";
 
 const addEntry = async (req: Request, res: Response) => {
     const { title, text } = req.body;
@@ -33,7 +25,7 @@ const addEntry = async (req: Request, res: Response) => {
 
 const getAllEntries = async (req: Request, res: Response) => {
     try{
-        const allEntries : EntryType[] = [];
+        const allEntries : EntryInterface[] = [];
         const querySnapshot = await  db.collection('entries').get();
         querySnapshot.forEach((doc:any) => allEntries.push(doc.data()));
         return res.status(200).json(allEntries);
