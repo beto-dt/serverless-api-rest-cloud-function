@@ -1,8 +1,7 @@
 interface taskInterface  {
     title: string,
     description: string,
-    creationDate: string,
-    completed: boolean,
+    status: string,
 }
 
 export { taskInterface }

@@ -1,76 +1,124 @@
 import { Response } from 'express';
 import { db } from '../config/firebase';
-import { Request } from '../enum/request';
 import {taskInterface} from "../interfaces/task.interface";
+import {RequestTask} from "../interfaces/request.interfaces";
+import {Collections} from "../enum/collection.enum";
+import {RespopnseStatus, Status} from "../enum/response_status.enum";
+import {RespopnseMessageTask} from "../enum/response_message.enum";
 
-const addTask = async (req: Request, res: Response) => {
-    const { title, description, creationDate, completed } = req.body;
+const addTask = async (req: RequestTask, res: Response) => {
+    const { title, description, status } = req.body;
+
+    if (!title || !description || !status) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageTask.ERROR_MISSING_DATA,
+        });
+    }
+
     try{
-        const task = db.collection('tasks').doc();
+        const task = db.collection(Collections.TASKS).doc();
         const taskObject = {
             id: task.id,
             title,
             description,
-            creationDate,
-            completed
+            status
         }
         task.set(taskObject);
-        res.status(200).send({
-            status: 'success',
-            message: 'task added successfully',
+        return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageTask.CREATED_TASK,
             data: taskObject
         })
     } catch(error: any) {
-        res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 
-const getAllTasks = async (req: Request, res: Response) => {
+const getAllTasks = async (req: RequestTask, res: Response) => {
     try{
         const allTasks : taskInterface[] = [];
-        const querySnapshot = await  db.collection('tasks').get();
+        const querySnapshot = await  db.collection(Collections.TASKS).get();
         querySnapshot.forEach((doc:any) => allTasks.push(doc.data()));
-        return res.status(200).json(allTasks);
+        return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageTask.ALL_TASKS,
+            data: allTasks
+        })
     } catch (error:any) {
-        return res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 
-const updateTask = async (req: Request, res: Response) => {
-    const {body:{ title, description, creationDate, completed}, params: {taskId}} = req
+const updateTask = async (req: RequestTask, res: Response) => {
+    const {body:{ title, description, status}, params: {taskId}} = req
+
+    if (!title || !description || !status) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageTask.ERROR_MISSING_DATA,
+        });
+    }
+
+    if (!taskId) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageTask.ERROR_MISSING_TASK_ID,
+        });
+    }
+
     try{
-        const task = db.collection('tasks').doc(taskId);
+        const task = db.collection(Collections.TASKS).doc(taskId);
         const currentData =    (await task.get()).data() || {};
         const taskObject= {
             title: title || currentData.title,
             description: description || currentData.description,
-            creationDate: creationDate || currentData.creationDate,
-            completed: completed || currentData.completed,
+            status: status || currentData.status,
         }
 
         await  task.set(taskObject);
 
-        return res.status(200).json({
-            status: 'success',
-            message: 'task updated successfully',
+        return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageTask.UPDATED_TASK,
             data: taskObject
         })
     } catch (error: any){
-        return res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 
-const deleteTask = async (req: Request, res: Response) => {
+const deleteTask = async (req: RequestTask, res: Response) => {
     const { taskId } = req.params;
+
+    if (!taskId) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageTask.ERROR_MISSING_TASK_ID,
+        });
+    }
+
     try {
-        const task = db.collection('tasks').doc(taskId);
+        const task = db.collection(Collections.TASKS).doc(taskId);
         await task.delete();
-        return res.status(200).json({
-            status: 'success',
-            message: 'task deleted successfully'
+        return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageTask.DELETED_TASK
         })
     } catch (error: any){
-        return res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 

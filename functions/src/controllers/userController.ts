@@ -1,45 +1,70 @@
 import { Response } from 'express';
-import {RequestUser} from "../interfaces/request_user.interfaces";
 import * as admin from 'firebase-admin';
+import {RequestUser} from "../interfaces/request.interfaces";
+import {RespopnseStatus, Status} from "../enum/response_status.enum";
+import {RespopnseMessageUser} from "../enum/response_message.enum";
+import {userInterface, userResponseInterface} from "../interfaces/user.interface";
 
 
 const createUser = async (req: RequestUser, res: Response) => {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageUser.ERROR_MISSING_DATA,
+        });
+    }
+
     try{
        const user = await admin.auth();
-        const userObject = {
+        const userObject : userInterface = {
             email,
             password
         }
         user.createUser(userObject);
-        res.status(200).send({
-            status: 'success',
-            message: 'user added successfully',
+        return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageUser.CREATED_USER,
             data: userObject
         })
     } catch(error: any) {
-        res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 
 const getUserByEmail = async (req: RequestUser, res: Response) => {
     const { email } = req.params;
 
+    if (!email) {
+        return res.status(RespopnseStatus.BAD_REQUEST).json({
+            status: Status.ERROR,
+            message: RespopnseMessageUser.ERROR_MISSING_DATA,
+        });
+    }
 
     try{
         const user = await admin.auth().getUserByEmail(email);
 
-        res.status(200).send({
-            status: 'success',
-            message: 'user getting successfully',
-            data: {
-                'uid' : user.uid,
-                'email': user.email,
-                'emailVerified' : user.emailVerified
-            }
+        const userObject : userResponseInterface = {
+            uid : user.uid,
+            email : user.email,
+            emailVerified : user.emailVerified
+        }
+
+       return res.status(RespopnseStatus.OK).json({
+            status: Status.SUCCESS,
+            message: RespopnseMessageUser.USER_BY_EMAIL,
+            data: userObject
         })
     } catch(error: any) {
-        res.status(500).json(error.message);
+        return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
+            status: Status.ERROR,
+            message: error.message,
+        })
     }
 }
 

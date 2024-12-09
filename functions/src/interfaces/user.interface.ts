@@ -3,4 +3,10 @@ interface userInterface  {
     password: string
 }
 
-export { userInterface }
+interface userResponseInterface  {
+    uid: string,
+    email: string | undefined,
+    emailVerified: boolean,
+}
+
+export { userInterface, userResponseInterface }
