@@ -3,7 +3,7 @@ import {userInterface} from "./user.interface";
 
 interface RequestTask {
     body: taskInterface,
-    params: { taskId: string }
+    params: { taskId: string, query: string }
 }
 
 interface RequestUser {

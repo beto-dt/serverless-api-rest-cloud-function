@@ -64,6 +64,7 @@ const getUserByEmail = async (req: RequestUser, res: Response) => {
         return res.status(RespopnseStatus.INTERNAL_SERVER_ERROR).json({
             status: Status.ERROR,
             message: error.message,
+            data:undefined
         })
     }
 }

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { db } from '../config/firebase';
 import {taskInterface} from "../interfaces/task.interface";
 import {RequestTask} from "../interfaces/request.interfaces";
-import {Collections} from "../enum/collection.enum";
+import {Collections, Conditional, StatusTask} from "../enum/collection.enum";
 import {RespopnseStatus, Status} from "../enum/response_status.enum";
 import {RespopnseMessageTask} from "../enum/response_message.enum";
 
@@ -39,9 +39,15 @@ const addTask = async (req: RequestTask, res: Response) => {
 }
 
 const getAllTasks = async (req: RequestTask, res: Response) => {
+    const { query } = req.params;
+
     try{
         const allTasks : taskInterface[] = [];
-        const querySnapshot = await  db.collection(Collections.TASKS).get();
+        if( query === StatusTask.ALL){
+            const querySnapshot = await  db.collection(Collections.TASKS).get();
+            querySnapshot.forEach((doc:any) => allTasks.push(doc.data()));
+        }
+        const querySnapshot = await  db.collection(Collections.TASKS).where(Conditional.STATUS, '==', query).get();
         querySnapshot.forEach((doc:any) => allTasks.push(doc.data()));
         return res.status(RespopnseStatus.OK).json({
             status: Status.SUCCESS,
@@ -77,7 +83,7 @@ const updateTask = async (req: RequestTask, res: Response) => {
         const task = db.collection(Collections.TASKS).doc(taskId);
         const currentData =    (await task.get()).data() || {};
         const taskObject= {
-            id: currentData.id,
+            id: taskId,
             title: title || currentData.title,
             description: description || currentData.description,
             status: status || currentData.status,
