@@ -77,6 +77,7 @@ const updateTask = async (req: RequestTask, res: Response) => {
         const task = db.collection(Collections.TASKS).doc(taskId);
         const currentData =    (await task.get()).data() || {};
         const taskObject= {
+            id: currentData.id,
             title: title || currentData.title,
             description: description || currentData.description,
             status: status || currentData.status,

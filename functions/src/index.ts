@@ -13,4 +13,4 @@ app.get('/tasks',getAllTasks);
 app.patch('/tasks/:taskId', updateTask);
 app.delete('/tasks/:taskId',deleteTask);
 
-exports.app = functions.https.onRequest(app);
+exports.app = functions.https.onRequest({cors:true},app);
